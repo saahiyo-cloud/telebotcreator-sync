@@ -1,168 +1,104 @@
-# Telebotcreator Sync (`telebotcreator-sync`)
+# Telebotcreator Sync
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Antigravity Skill](https://img.shields.io/badge/Antigravity-Skill-green.svg)](https://github.com/saahiyo-cloud/telebotcreator-sync)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/saahiyo-cloud/telebotcreator-sync/pulls)
-
-A developer synchronization utility and **Google Antigravity Skill** for [Telebotcreator (TBC)](https://telebotcreator.com).
-
-Develop Telegram bot code locally in your IDE (VS Code, Cursor, Antigravity, PyCharm) with autocompletion, Git version control, and linter support, then synchronize changes directly to Telebotcreator via the API.
+A simple tool to write your [Telebotcreator (TBC)](https://telebotcreator.com) Telegram bot code on your computer (in VS Code or any editor) and sync it directly to your bot.
 
 ---
 
-## Features
+## Why use this?
 
-- **Bidirectional Synchronization**:
-  - **Push / Sync**: Upload local `.py` command files to your Telebotcreator bot.
-  - **Pull / Export**: Download online bot commands into your local directory.
-- **Targeted Updates**: Sync all commands at once or target a single command file with `--file`.
-- **Dry-Run Simulation**: Preview changes safely with `--dry-run` before applying them to your live bot.
-- **Command Inspector**: List all online commands with IDs, pinned status, and admin restrictions.
-- **Antigravity Skill Integration**: Native skill definition for Google Antigravity IDE.
-- **Multi-Tier Configuration**: Configure via CLI flags, environment variables, local workspace JSON, or global system-wide config.
-- **Automatic Metadata Parsing**: Extracts command names from Python file annotations (`# Command: /start` or `# Command: .env`).
+Normally, you have to write and edit your bot code inside the Telebotcreator browser window. 
+
+With this tool, you can:
+- Write your code locally in **VS Code**, **Cursor**, or **Notepad** with proper syntax highlighting and auto-save.
+- Sync all your commands to Telebotcreator with a single command (`python scripts/sync_tbc.py`).
+- Download (pull) commands already on your bot to your computer.
+- Preview changes before applying them with `--dry-run`.
+- Back up your bot code to GitHub.
 
 ---
 
-## Quick Start
+## 3-Step Quick Start
 
-### 1. Installation
-
-Clone this repository:
+### 1. Download & Install
+Open your terminal and run:
 ```bash
 git clone https://github.com/saahiyo-cloud/telebotcreator-sync.git
 cd telebotcreator-sync
-```
-
-Install requirements:
-```bash
 pip install requests
 ```
 
-### 2. Initialize Configuration
-
-Generate a starter configuration file in your project directory:
+### 2. Create your config file
+Run:
 ```bash
 python scripts/sync_tbc.py --init
 ```
-
-This creates `tbc_config.json`:
+This creates a file named `tbc_config.json`. Open it and fill in your details:
 ```json
 {
-  "bot_id": "YOUR_BOT_ID",
-  "login_token": "YOUR_LOGIN_TOKEN_JWT",
-  "commands_dir": "commands",
-  "api_base_url": "https://api.telebotcreator.com/v2"
+  "bot_id": "12345678",
+  "login_token": "your_token_here",
+  "commands_dir": "commands"
 }
 ```
 
----
-
-## How to Get Your Telebotcreator Credentials
-
-1. Open [telebotcreator.com](https://telebotcreator.com/) and log in.
-2. Select your bot. The **Bot ID** is the number in the browser URL:
-   `https://telebotcreator.com/bots/29288962/commands` -> Bot ID: `29288962`
-3. Press `F12` (or Right-Click -> **Inspect**) to open Developer Tools.
-4. Navigate to **Application** (or **Storage**) -> **Cookies** -> `https://telebotcreator.com`.
-5. Copy the value of the `login_token` cookie and paste it into `tbc_config.json`.
-
----
-
-## CLI Usage
-
-### Full Workspace Sync
-Uploads all Python files from your `commands/` directory:
+### 3. Sync your code!
+Put your `.py` files inside the `commands/` folder, then run:
 ```bash
 python scripts/sync_tbc.py
 ```
-
-### Single Command Sync
-Deploy only the command you just modified:
-```bash
-python scripts/sync_tbc.py --file commands/start.py
-```
-
-### Dry Run (Preview Changes)
-Simulate synchronization without making actual API modifications:
-```bash
-python scripts/sync_tbc.py --dry-run
-```
-
-### List Online Commands
-Inspect all commands currently active on your bot:
-```bash
-python scripts/sync_tbc.py --list
-```
-
-### Pull / Export Online Commands
-Download all commands from Telebotcreator into your local `commands/` directory:
-```bash
-python scripts/sync_tbc.py --pull
-```
+Done! Your commands are now live on Telebotcreator.
 
 ---
 
-## Using with Google Antigravity
+## How to get your Bot ID and Token
 
-You can install this repository as a global skill for the **Google Antigravity IDE** so that the agent can manage your bot commands when prompted.
-
-### Global Installation:
-Copy the skill folder into your Antigravity global configuration root:
-```powershell
-# Windows
-mkdir "$env:USERPROFILE\.gemini\config\skills\tbc-sync"
-Copy-Item -Recurse ./* "$env:USERPROFILE\.gemini\config\skills\tbc-sync\"
-```
-
-### Workspace Installation:
-Place the skill into your project's `.agents/skills/tbc-sync/` folder.
-
-Once installed, prompt the agent:
-> *"Sync my local commands to Telebotcreator."*
-> *"Update the start command online."*
-> *"Check what commands are currently deployed on my bot."*
+1. Go to [telebotcreator.com](https://telebotcreator.com/) and log into your account.
+2. Click on your bot. Look at the web browser URL:
+   `https://telebotcreator.com/bots/12345678/commands` -> Your Bot ID is **12345678**.
+3. Press `F12` on your keyboard (or right-click anywhere and click **Inspect**).
+4. Go to **Application** (or **Storage**) -> **Cookies** -> `https://telebotcreator.com`.
+5. Copy the value of `login_token` and paste it into `tbc_config.json`.
 
 ---
 
-## Command Annotation Syntax
+## Cheat Sheet
 
-In your Python command files, specify the bot command name in the first comment line:
+| What you want to do | Command to run |
+| :--- | :--- |
+| **Upload all commands** | `python scripts/sync_tbc.py` |
+| **Upload only one file** | `python scripts/sync_tbc.py --file commands/start.py` |
+| **Check what would change without touching bot** | `python scripts/sync_tbc.py --dry-run` |
+| **See list of online commands** | `python scripts/sync_tbc.py --list` |
+| **Download online commands to your PC** | `python scripts/sync_tbc.py --pull` |
+
+---
+
+## How to Name Your Commands
+
+Put `# Command: <name>` on the first line of your Python file:
 
 ```python
 # Command: /start
 
-def handle_start(bot, message):
-    bot.send_message(message.chat.id, "Welcome to my bot!")
+def main():
+    bot.send_message(message.chat.id, "Hello! Welcome to the bot.")
 ```
 
-If the `# Command:` header is omitted, the filename (without `.py`) is used automatically as the command name.
+If you don't add this comment, the tool will just use the file's name (for example, `start.py` becomes `start`).
 
 ---
 
-## Configuration Hierarchy
+## Using with Google Antigravity AI
 
-Credentials and settings are resolved in this priority order:
-1. **CLI Flags**: `--bot-id`, `--login-token`, `--dir`, `--config`
-2. **Environment Variables**: `TBC_BOT_ID`, `TBC_LOGIN_TOKEN`, `TBC_COMMANDS_DIR`
-3. **Local Workspace Config**: `./tbc_config.json`
-4. **Global System Config**: `~/.gemini/config/tbc_config.json`
+If you use the Google Antigravity IDE, this repo is already structured as an AI skill.
 
----
-
-## Security Best Practice
-
-Never commit your `tbc_config.json` or `login_token` to public repositories. Keep `tbc_config.json` listed in your `.gitignore`.
-
----
-
-## Contributing
-
-Contributions, issues, and feature requests are welcome. Feel free to check the [issues page](https://github.com/saahiyo-cloud/telebotcreator-sync/issues).
+You can ask the AI in plain English:
+- *"Upload my commands to Telebotcreator"*
+- *"Show me my online bot commands"*
+- *"Pull my bot commands down to this folder"*
 
 ---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+[MIT License](LICENSE) — free to use and modify for your own projects!
