@@ -1,0 +1,6 @@
+{
+  "bot_id": "YOUR_BOT_ID_HERE",
+  "login_token": "YOUR_LOGIN_TOKEN_HERE",
+  "commands_dir": "commands",
+  "api_base_url": "https://api.telebotcreator.com/v2"
+}
