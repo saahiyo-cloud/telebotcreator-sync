@@ -7,7 +7,7 @@ description: >-
 
 # Telebotcreator Synchronization Skill (`tbc-sync`)
 
-This skill enables seamless synchronization of local Python command files with the **Telebotcreator (TBC)** platform via the TBC REST API.
+This skill enables synchronization of local Python command files with the Telebotcreator (TBC) platform via the TBC REST API.
 
 ## When to Use
 
@@ -24,10 +24,10 @@ Activate this skill when:
 
 The sync utility resolves credentials and settings in the following order:
 
-1. **CLI Arguments**: `--bot-id`, `--login-token`, `--dir`, `--config`
-2. **Environment Variables**: `TBC_BOT_ID`, `TBC_LOGIN_TOKEN`, `TBC_COMMANDS_DIR`
-3. **Local Workspace Config**: `./tbc_config.json`
-4. **Global Config**: `~/.gemini/config/tbc_config.json`
+1. CLI Arguments: `--bot-id`, `--login-token`, `--dir`, `--config`
+2. Environment Variables: `TBC_BOT_ID`, `TBC_LOGIN_TOKEN`, `TBC_COMMANDS_DIR`
+3. Local Workspace Config: `./tbc_config.json`
+4. Global Config: `~/.gemini/config/tbc_config.json`
 
 ### Configuration Format (`tbc_config.json`)
 ```json

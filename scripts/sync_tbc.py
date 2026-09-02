@@ -17,7 +17,7 @@ from pathlib import Path
 try:
     import requests
 except ImportError:
-    print("❌ Error: 'requests' module is missing. Please install it with: pip install requests")
+    print("[ERROR] 'requests' module is missing. Please install it with: pip install requests")
     sys.exit(1)
 
 
@@ -59,7 +59,7 @@ def load_config(args):
                     loaded_from = str(p)
                     break
             except Exception as e:
-                print(f"⚠️  Warning: Could not read config from {p}: {e}")
+                print(f"[WARN] Could not read config from {p}: {e}")
 
     # Environment variables override config file
     if os.environ.get("TBC_BOT_ID"):
@@ -114,14 +114,14 @@ def fetch_online_commands(config):
 
 
 def cmd_list(config):
-    print("⌛ Fetching command list from Telebotcreator...")
+    print("Fetching command list from Telebotcreator...")
     try:
         commands, _ = fetch_online_commands(config)
     except Exception as e:
-        print(f"❌ Failed to fetch commands: {e}")
+        print(f"[ERROR] Failed to fetch commands: {e}")
         return 1
 
-    print(f"\n📋 Online Commands ({len(commands)} found) for Bot ID: {config['bot_id']}")
+    print(f"\nOnline Commands ({len(commands)} found) for Bot ID: {config['bot_id']}")
     print("-" * 75)
     print(f"{'Command Name':<25} | {'ID':<26} | {'Pinned':<7} | {'Admin Only'}")
     print("-" * 75)
@@ -138,11 +138,11 @@ def cmd_list(config):
 
 
 def cmd_pull(config, target_dir):
-    print(f"⌛ Pulling commands from Telebotcreator into '{target_dir}/'...")
+    print(f"Pulling commands from Telebotcreator into '{target_dir}/'...")
     try:
         commands, _ = fetch_online_commands(config)
     except Exception as e:
-        print(f"❌ Failed to fetch commands: {e}")
+        print(f"[ERROR] Failed to fetch commands: {e}")
         return 1
 
     os.makedirs(target_dir, exist_ok=True)
@@ -169,10 +169,10 @@ def cmd_pull(config, target_dir):
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(code)
 
-        print(f"  📥 Saved '{cmd_name}' -> {file_path}")
+        print(f"  [SAVED] '{cmd_name}' -> {file_path}")
         pulled += 1
 
-    print(f"\n✅ Pulled {pulled} commands to '{target_dir}'.")
+    print(f"\nPulled {pulled} commands to '{target_dir}'.")
     return 0
 
 
@@ -185,14 +185,14 @@ def cmd_init():
     }
     target = Path.cwd() / "tbc_config.json"
     if target.exists():
-        print(f"⚠️  Config file already exists at {target}")
+        print(f"[WARN] Config file already exists at {target}")
         return 1
 
     with open(target, "w", encoding="utf-8") as f:
         json.dump(template, f, indent=2)
 
-    print(f"✅ Created starter configuration: {target}")
-    print("👉 Edit this file with your bot_id and login_token.")
+    print(f"[OK] Created starter configuration: {target}")
+    print("Edit this file with your bot_id and login_token.")
     return 0
 
 
@@ -208,19 +208,19 @@ def sync_commands(config, single_file=None, dry_run=False):
     bot_id = config["bot_id"]
     headers, cookies = get_headers_and_cookies(config)
 
-    print("⚡ TELEBOTCREATOR WORKSPACE SYNC")
+    print("TELEBOTCREATOR WORKSPACE SYNC")
     print("========================================")
     if dry_run:
-        print("🔍 RUNNING IN DRY-RUN MODE (No changes will be applied)")
+        print("[DRY-RUN] Running in simulation mode (no remote changes will be made)")
 
     # 1. Fetch online commands
     try:
         online_commands, list_url = fetch_online_commands(config)
     except Exception as e:
-        print(f"❌ {e}")
+        print(f"[ERROR] {e}")
         return 1
 
-    print(f"👥 Found {len(online_commands)} commands online for bot {bot_id}.")
+    print(f"Found {len(online_commands)} commands online for bot {bot_id}.")
     online_map = {cmd["command"]: cmd for cmd in online_commands}
 
     # 2. Determine files to sync
@@ -228,17 +228,17 @@ def sync_commands(config, single_file=None, dry_run=False):
     if single_file:
         p = Path(single_file)
         if not p.is_file():
-            print(f"❌ File not found: {single_file}")
+            print(f"[ERROR] File not found: {single_file}")
             return 1
         files_to_sync.append(p)
     else:
         commands_dir = Path(config.get("commands_dir", "commands"))
         if not commands_dir.exists():
-            print(f"❌ Commands directory not found: {commands_dir}")
+            print(f"[ERROR] Commands directory not found: {commands_dir}")
             return 1
         files_to_sync = sorted(list(commands_dir.glob("*.py")))
 
-    print(f"📂 Processing {len(files_to_sync)} local file(s)...")
+    print(f"Processing {len(files_to_sync)} local file(s)...")
     print("========================================\n")
 
     success_count = 0
@@ -250,7 +250,7 @@ def sync_commands(config, single_file=None, dry_run=False):
             with open(file_path, "r", encoding="utf-8") as f:
                 code_content = f.read()
         except Exception as e:
-            print(f"⚠️  [Failed] Could not read {file_name}: {e}")
+            print(f"[WARN] Could not read {file_name}: {e}")
             fail_count += 1
             continue
 
@@ -259,9 +259,9 @@ def sync_commands(config, single_file=None, dry_run=False):
 
         if not online_cmd:
             # CREATE Command
-            print(f"➕ [Create] '{command_name}' (File: {file_name})")
+            print(f"[CREATE] '{command_name}' (File: {file_name})")
             if dry_run:
-                print("  └─ [Dry Run] Would POST new command to TBC")
+                print("  └─ [DRY-RUN] Would POST new command to TBC")
                 success_count += 1
                 continue
 
@@ -270,18 +270,18 @@ def sync_commands(config, single_file=None, dry_run=False):
             try:
                 res = requests.post(create_url, headers=headers, cookies=cookies, json=payload)
                 if res.status_code == 200 and res.json().get("ok"):
-                    print("  └─ Created command online ✅")
+                    print("  └─ Created command online [OK]")
                     # Refresh map
                     res_refresh = requests.get(list_url, headers=headers, cookies=cookies)
                     if res_refresh.status_code == 200:
                         online_map = {cmd["command"]: cmd for cmd in res_refresh.json().get("commands", [])}
                         online_cmd = online_map.get(command_name)
                 else:
-                    print(f"  └─ ❌ Creation failed: {res.text}")
+                    print(f"  └─ [ERROR] Creation failed: {res.text}")
                     fail_count += 1
                     continue
             except Exception as e:
-                print(f"  └─ ❌ Connection error during creation: {e}")
+                print(f"  └─ [ERROR] Connection error during creation: {e}")
                 fail_count += 1
                 continue
 
@@ -301,29 +301,29 @@ def sync_commands(config, single_file=None, dry_run=False):
                 "admin_only": online_cmd.get("admin_only", False)
             }
 
-            print(f"⬆️  [Update] Uploading code for '{command_name}' (ID: {cmd_id})...")
+            print(f"[UPDATE] Uploading code for '{command_name}' (ID: {cmd_id})...")
             if dry_run:
-                print(f"  └─ [Dry Run] Would PUT code ({len(code_content)} chars)")
+                print(f"  └─ [DRY-RUN] Would PUT code ({len(code_content)} chars)")
                 success_count += 1
                 continue
 
             try:
                 res = requests.put(update_url, headers=headers, cookies=cookies, json=payload)
                 if res.status_code == 200:
-                    print("  └─ Synchronized successfully! ✅")
+                    print("  └─ Synchronized successfully [OK]")
                     success_count += 1
                 else:
-                    print(f"  └─ ❌ Upload failed ({res.status_code}): {res.text}")
+                    print(f"  └─ [ERROR] Upload failed ({res.status_code}): {res.text}")
                     fail_count += 1
             except Exception as e:
-                print(f"  └─ ❌ Connection error during upload: {e}")
+                print(f"  └─ [ERROR] Connection error during upload: {e}")
                 fail_count += 1
 
     print("\n========================================")
-    print("🏁 SYNC PROCESS COMPLETE")
-    print(f"  🎉 Successful : {success_count}")
-    print(f"  ⚠️  Failed     : {fail_count}")
-    print(f"  📦 Total      : {success_count + fail_count}")
+    print("SYNC PROCESS COMPLETE")
+    print(f"  Successful : {success_count}")
+    print(f"  Failed     : {fail_count}")
+    print(f"  Total      : {success_count + fail_count}")
     print("========================================")
     return 0 if fail_count == 0 else 1
 
@@ -333,15 +333,15 @@ def main():
         sys.stdout.reconfigure(encoding="utf-8")
 
     parser = argparse.ArgumentParser(
-        description="⚡ Telebotcreator (TBC) Workspace Synchronization Utility",
+        description="Telebotcreator (TBC) Workspace Synchronization Utility",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""Examples:
-  sync_tbc.py                       # Sync all files in commands/
+  sync_tbc.py                         # Sync all files in commands/
   sync_tbc.py --file commands/.env.py # Sync a single file
-  sync_tbc.py --list                # List all online commands
-  sync_tbc.py --pull                # Pull online commands to commands/
-  sync_tbc.py --dry-run             # Check status without modifying
-  sync_tbc.py --init                # Generate starter tbc_config.json
+  sync_tbc.py --list                  # List all online commands
+  sync_tbc.py --pull                  # Pull online commands to commands/
+  sync_tbc.py --dry-run               # Check status without modifying
+  sync_tbc.py --init                  # Generate starter tbc_config.json
 """
     )
     parser.add_argument("--bot-id", help="Telebotcreator Bot ID (overrides config)")
@@ -362,16 +362,16 @@ def main():
     config, loaded_from = load_config(args)
 
     if not config["bot_id"] or not config["login_token"]:
-        print("❌ Error: Both 'bot_id' and 'login_token' are required.")
-        print("💡 You can provide them via:")
-        print("   1. A local 'tbc_config.json' file (run 'sync_tbc.py --init')")
-        print("   2. Global config '~/.gemini/config/tbc_config.json'")
-        print("   3. Environment variables TBC_BOT_ID and TBC_LOGIN_TOKEN")
-        print("   4. CLI flags --bot-id and --login-token")
+        print("[ERROR] Both 'bot_id' and 'login_token' are required.")
+        print("Provide them via:")
+        print("  1. A local 'tbc_config.json' file (run 'sync_tbc.py --init')")
+        print("  2. Global config '~/.gemini/config/tbc_config.json'")
+        print("  3. Environment variables TBC_BOT_ID and TBC_LOGIN_TOKEN")
+        print("  4. CLI flags --bot-id and --login-token")
         sys.exit(1)
 
     if loaded_from and not args.list:
-        print(f"⚙️  Using configuration from: {loaded_from}")
+        print(f"Using configuration from: {loaded_from}")
 
     if args.list:
         sys.exit(cmd_list(config))
